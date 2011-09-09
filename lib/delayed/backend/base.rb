@@ -1,6 +1,8 @@
 module Delayed
+  require 'encryptor'
   module Backend
     module Base
+      SECRET_KEY = 'A SECRET KEY'
       def self.included(base)
         base.extend ClassMethods
       end
@@ -72,11 +74,11 @@ module Delayed
 
       def payload_object=(object)
         @payload_object = object
-        self.handler = object.to_yaml
+        self.handler = encrypt(object.to_yaml)
       end
 
       def payload_object
-        @payload_object ||= YAML.load(self.handler)
+        @payload_object ||= YAML.load(decrypt(self.handler))
       rescue TypeError, LoadError, NameError, ArgumentError => e
         raise DeserializationError,
           "Job failed to load: #{e.message}. Handler: #{handler.inspect}"
@@ -119,7 +121,15 @@ module Delayed
       end
       
     protected
-
+      def key
+        @key ||= Digest::SHA256.hexdigest('KEY')
+      end
+      def encrypt(string)
+        Base64.encode64(Encryptor.encrypt(string, :key => key))
+      end
+      def decrypt(string)
+        Encryptor.decrypt(Base64.decode64(string), :key => key)
+      end
       def set_default_run_at
         self.run_at ||= self.class.db_time_now
       end
