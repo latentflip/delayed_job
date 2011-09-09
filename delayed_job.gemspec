@@ -18,6 +18,7 @@ This gem is collectiveidea's fork (http://github.com/collectiveidea/delayed_job)
   s.test_files        = Dir.glob('spec/**/*')
 
   s.add_runtime_dependency      'daemons'
+  s.add_runtime_dependency      'encryptor'
   s.add_runtime_dependency      'activesupport'
 
   s.add_development_dependency  'activesupport',  '~> 3.0'
